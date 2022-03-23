@@ -1,7 +1,9 @@
+import imp
 import requests as r
 import json
 from csv import writer
-import requests
+import requests, os
+from datetime import datetime
 
 collections = {
   'APPLICATION': 'APPLICATION',
@@ -75,6 +77,49 @@ def scrape(response):
 
     scrape(response['next'])
 
+def process():
+    dt = datetime.now().strftime('%Y-%m-%d')
+    headers={
+    'Referer': 'https://itunes.apple.com',
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
+    }
+
+    for root, dir, file in os.walk('/media/nimashiri/DATA/vsprojects/causal analysis/apps'):
+        j = 0
+        for i, item in enumerate(dir):
+            link2 = 'http://localhost:3000/api/apps/'+item
+            response = r.get(link2, headers=headers)
+            if response.status_code == 200:
+                response = json.loads(response.text)
+                with open('./weekly_data/'+dt+'.csv', 'a', newline='\n') as fd:
+                    writer_object = writer(fd)
+                    for k, v in response.items():
+                        my_data = []
+                        if 'recentChanges' in response.keys():
+                            my_data.append(response['recentChanges'])
+                        if 'released' in response.keys():
+                            my_data.append(response['released'])
+                        if 'version' in response.keys():
+                            my_data.append(response['version'])
+                        if 'title' in response.keys():
+                            my_data.append(response['title'])
+                        if 'description' in response.keys():
+                            my_data.append(response['description'])
+                        if 'installs' in response.keys():
+                            my_data.append(response['installs'])
+                        if 'score' in response.keys():
+                            my_data.append(response['score'])
+                        if 'ratings' in response.keys():
+                            my_data.append(response['ratings'])
+                        if 'version' in response.keys():
+                            my_data.append(response['version'])
+                        if 'url' in response.keys():
+                            my_data.append(response['url'])
+                        if 'released' in response.keys():
+                            my_data.append(response['url'])
+                                    
+                        writer_object.writerow(my_data)
+
 
 
 def main():
@@ -123,4 +168,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    process()
+    # main()
